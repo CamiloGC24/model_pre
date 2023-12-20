@@ -10,7 +10,7 @@ pretrain_model = resnet50(pretrained=True)
 in_features = pretrain_model.fc.in_features
 pretrain_model.fc = nn.Linear(in_features, 4)
 modelo_guardado = pretrain_model
-modelo_guardado.load_state_dict(torch.load('modelo_entrenado_20%2.0.pth'))
+modelo_guardado.load_state_dict(torch.load('modelo_entrenado_20%2.0.pth', map_location=torch.device('cpu')))
 modelo_guardado.eval()
 
 # Mover el modelo a GPU si está disponible
