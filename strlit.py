@@ -48,8 +48,15 @@ enfermedad_seleccionada = st.selectbox("Selecciona la enfermedad a diagnosticar:
 # Cargar la información de la enfermedad
 ruta_carpeta_enfermedad = enfermedades[enfermedad_seleccionada]
 ruta_info_enfermedad = os.path.join("modelos", ruta_carpeta_enfermedad, "info.json")
-with open(ruta_info_enfermedad, 'r') as json_file:
-    info_enfermedad = json.load(json_file)
+
+try:
+    with open(ruta_info_enfermedad, 'r') as json_file:
+        info_enfermedad = json.load(json_file)
+except FileNotFoundError:
+    st.error(f"No se pudo encontrar el archivo {ruta_info_enfermedad}. Verifica la ruta y asegúrate de que el archivo exista.")
+except Exception as e:
+    st.error(f"Error al leer el archivo {ruta_info_enfermedad}: {str(e)}")
+    raise  # Para mostrar el error completo en el registro
 
 # Cargar el modelo seleccionado
     
