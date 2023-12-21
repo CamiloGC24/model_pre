@@ -6,29 +6,6 @@ from PIL import Image
 import os
 from torchvision.models import resnet50
 
-# Cargar el modelo preentrenado
-pretrain_model = resnet50(pretrained=True)
-in_features = pretrain_model.fc.in_features
-pretrain_model.fc = nn.Linear(in_features, 4)
-modelo_guardado = pretrain_model
-modelo_guardado.load_state_dict(torch.load('modelo_entrenado_20%2.0.pth', map_location=torch.device('cpu')))
-modelo_guardado.eval()
-
-# Mover el modelo a GPU si está disponible
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-modelo_guardado = modelo_guardado.to(device)
-
-# Transformaciones de la imagen
-transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-])
-
-# Función para realizar la predicción y devolver el nombre de la clase
-def predecir_imagen(imagen):
-    imagen_transformada = transform(imagen).unsqueeze(0)
-    imagen_transformada = imagen_transformada.to(device)
 
 # Definir funciones para cargar modelos y realizar predicciones
 def cargar_modelo(modelo_path, num_clases):
