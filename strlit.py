@@ -12,7 +12,6 @@ def cargar_modelo(modelo_path, num_clases):
     # Obtener la ruta completa al modelo
     ruta_completa_modelo = os.path.join(modelo_path)
     
-    st.write(ruta_completa_modelo)
 
     # Cargar y configurar el modelo según sea necesario
     pretrain_model = resnet50(pretrained=True)
