@@ -10,14 +10,30 @@ import json
 # Definir funciones para cargar modelos y realizar predicciones
 def cargar_modelo(modelo_path, num_clases):
     # Obtener la ruta completa al modelo
+
+
     ruta_completa_modelo = os.path.join(modelo_path)
-    
+    st.session_state['answer'] = ''
+
+    st.write(st.session_state)
+
+    realans = ['', 'abc', 'edf']
+
+    if  st.session_state['answer'] in realans:
+        answerStat = "correct"
+    elif st.session_state['answer'] not in realans:
+        answerStat = "incorrect"
+
+    st.write(st.session_state)
+    st.write(answerStat)
+
+
     # Cargar y configurar el modelo según sea necesario
     pretrain_model = resnet50(pretrained=True)
     in_features = pretrain_model.fc.in_features
     pretrain_model.fc = nn.Linear(in_features, num_clases)
     modelo_cargado = pretrain_model
-    modelo_cargado.load_state_dict(torch.load(modelo_path, map_location=torch.device('cpu')))
+    modelo_cargado.load_state_dict(torch.load(ruta_completa_modelo, map_location=torch.device('cpu')))
     modelo_cargado.eval()
     return modelo_cargado
 
