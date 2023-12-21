@@ -47,7 +47,7 @@ enfermedad_seleccionada = st.selectbox("Selecciona la enfermedad a diagnosticar:
 
 # Cargar la información de la enfermedad
 ruta_carpeta_enfermedad = enfermedades[enfermedad_seleccionada]
-ruta_info_enfermedad = os.path.join("modelos", ruta_carpeta_enfermedad, "info.json")
+ruta_info_enfermedad = os.path.join(ruta_carpeta_enfermedad)
 
 try:
     with open(ruta_info_enfermedad, 'r') as json_file:
