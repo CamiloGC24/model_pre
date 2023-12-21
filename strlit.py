@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 from PIL import Image
 import os
+from torchvision.models import resnet50
 import json  
 
 # Definir funciones para cargar modelos y realizar predicciones
@@ -36,25 +37,30 @@ st.title("Diagnóstico de Enfermedades")
 
 # Menú de opciones para seleccionar la enfermedad
 enfermedades = {
-    "Enfermedad A": "modelos/enfermedad_A/modelo_entrenado.pth",
-    "Enfermedad B": "modelos/enfermedad_B/modelo_entrenado.pth",
+    "Enfermedad A": "modelos/pneumonia/info.json",
+    "Enfermedad B": "modelos/tumor_cerebral/info.json",
     # Agregar más enfermedades según sea necesario
 }
 
 enfermedad_seleccionada = st.selectbox("Selecciona la enfermedad a diagnosticar:", list(enfermedades.keys()))
 
+
 # Cargar la información de la enfermedad
-ruta_info_enfermedad = enfermedades[enfermedad_seleccionada]
-# Si tienes un archivo JSON con información de la enfermedad, puedes cargarlo aquí si es necesario
+ruta_carpeta_enfermedad = enfermedades[enfermedad_seleccionada]
+ruta_info_enfermedad = os.path.join("modelos", ruta_carpeta_enfermedad, "info.json")
+with open(ruta_info_enfermedad, 'r') as json_file:
+    info_enfermedad = json.load(json_file)
 
 # Cargar el modelo seleccionado
-modelo_seleccionado = cargar_modelo(ruta_info_enfermedad, num_clases=4)  # Ajusta num_clases según tu modelo
+    
+modelo_seleccionado = cargar_modelo(os.path.join(ruta_carpeta_enfermedad, "modelo_entrenado.pth"), info_enfermedad['num_clases'])
 
 # Subir una imagen
 uploaded_file = st.file_uploader("Elige una imagen...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
     # Convertir la imagen a formato RGB
+
     imagen = Image.open(uploaded_file).convert('RGB')
 
     # Realizar la predicción
@@ -63,4 +69,4 @@ if uploaded_file is not None:
     # Mostrar la imagen y resultados
     st.image(imagen, caption='Imagen cargada', use_column_width=True)
     st.write("Resultado:")
-    st.write(f"Clase predicha para {enfermedad_seleccionada}: {clase_predicha}")
+    st.write(f"Clase predicha para {info_enfermedad['nombre']}: {clase_predicha}")
