@@ -5,7 +5,7 @@ import torch.nn as nn
 from PIL import Image
 import os
 from torchvision.models import resnet50
-
+import json  
 
 # Definir funciones para cargar modelos y realizar predicciones
 def cargar_modelo(modelo_path, num_clases):
@@ -46,12 +46,10 @@ enfermedad_seleccionada = st.selectbox("Selecciona la enfermedad a diagnosticar:
 
 
 # Cargar la información de la enfermedad
-try:
-    info_enfermedad = st.read_json(enfermedades[enfermedad_seleccionada])
-except Exception as e:
-    st.error(f"Error al leer el archivo JSON: {str(e)}")
-    info_enfermedad = None
-    
+ruta_info_enfermedad = enfermedades[enfermedad_seleccionada]
+with open(ruta_info_enfermedad, 'r') as json_file:
+    info_enfermedad = json.load(json_file)
+
 # Cargar el modelo seleccionado
 modelo_seleccionado = cargar_modelo(info_enfermedad['modelo'], info_enfermedad['num_clases'])
 
