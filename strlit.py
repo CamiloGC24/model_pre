@@ -10,7 +10,7 @@ import json
 # Definir funciones para cargar modelos y realizar predicciones
 def cargar_modelo(modelo_path, num_clases):
     # Obtener la ruta completa al modelo
-    ruta_completa_modelo = os.path.join("modelos", modelo_path)
+    ruta_completa_modelo = os.path.join(modelo_path)
     
     # Cargar y configurar el modelo según sea necesario
     pretrain_model = resnet50(pretrained=True)
