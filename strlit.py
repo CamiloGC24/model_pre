@@ -29,7 +29,6 @@ transform = transforms.Compose([
 def predecir_imagen(imagen):
     imagen_transformada = transform(imagen).unsqueeze(0)
     imagen_transformada = imagen_transformada.to(device)
->>>>>>> 0660d84d66eb78c9af9e751dfd2690962d7d91b2
 
 # Definir funciones para cargar modelos y realizar predicciones
 def cargar_modelo(modelo_path, num_clases):
@@ -45,7 +44,6 @@ def cargar_modelo(modelo_path, num_clases):
     modelo_cargado.eval()
     return modelo_cargado
 
-<<<<<<< HEAD
 def predecir_imagen(modelo, imagen):
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
