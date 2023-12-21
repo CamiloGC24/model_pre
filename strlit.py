@@ -6,6 +6,30 @@ from PIL import Image
 import os
 from torchvision.models import resnet50
 
+# Cargar el modelo preentrenado
+pretrain_model = resnet50(pretrained=True)
+in_features = pretrain_model.fc.in_features
+pretrain_model.fc = nn.Linear(in_features, 4)
+modelo_guardado = pretrain_model
+modelo_guardado.load_state_dict(torch.load('modelo_entrenado_20%2.0.pth', map_location=torch.device('cpu')))
+modelo_guardado.eval()
+
+# Mover el modelo a GPU si está disponible
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+modelo_guardado = modelo_guardado.to(device)
+
+# Transformaciones de la imagen
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+])
+
+# Función para realizar la predicción y devolver el nombre de la clase
+def predecir_imagen(imagen):
+    imagen_transformada = transform(imagen).unsqueeze(0)
+    imagen_transformada = imagen_transformada.to(device)
+>>>>>>> 0660d84d66eb78c9af9e751dfd2690962d7d91b2
 
 # Definir funciones para cargar modelos y realizar predicciones
 def cargar_modelo(modelo_path, num_clases):
@@ -21,6 +45,7 @@ def cargar_modelo(modelo_path, num_clases):
     modelo_cargado.eval()
     return modelo_cargado
 
+<<<<<<< HEAD
 def predecir_imagen(modelo, imagen):
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
@@ -44,6 +69,7 @@ enfermedades = {
 
 enfermedad_seleccionada = st.selectbox("Selecciona la enfermedad a diagnosticar:", list(enfermedades.keys()))
 
+
 # Cargar la información de la enfermedad
 info_enfermedad = st.read_json(enfermedades[enfermedad_seleccionada])
 
@@ -55,6 +81,7 @@ uploaded_file = st.file_uploader("Elige una imagen...", type=["jpg", "jpeg", "pn
 
 if uploaded_file is not None:
     # Convertir la imagen a formato RGB
+
     imagen = Image.open(uploaded_file).convert('RGB')
 
     # Realizar la predicción
