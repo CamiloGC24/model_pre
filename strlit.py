@@ -46,8 +46,12 @@ enfermedad_seleccionada = st.selectbox("Selecciona la enfermedad a diagnosticar:
 
 
 # Cargar la información de la enfermedad
-info_enfermedad = st.read_json(enfermedades[enfermedad_seleccionada])
-
+try:
+    info_enfermedad = st.read_json(enfermedades[enfermedad_seleccionada])
+except Exception as e:
+    st.error(f"Error al leer el archivo JSON: {str(e)}")
+    info_enfermedad = None
+    
 # Cargar el modelo seleccionado
 modelo_seleccionado = cargar_modelo(info_enfermedad['modelo'], info_enfermedad['num_clases'])
 
