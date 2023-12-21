@@ -3,7 +3,7 @@
     "modelo": "modelo_entrenado.pth",
     "num_clases": 2,
     "clases": {
-      "0": "Pneumonia",
-      "1": "Sano"
+      "0": "Sano",
+      "1": "Pneumonia"
     }
   }
