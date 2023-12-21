@@ -59,14 +59,14 @@ except Exception as e:
     raise  # Para mostrar el error completo en el registro
 
 # Cargar el modelo seleccionado
-    
-modelo_seleccionado = cargar_modelo(os.path.join(ruta_carpeta_enfermedad, "modelo_entrenado.pth"), info_enfermedad['num_clases'])
 
 ruta_completa_modelo = os.path.join(ruta_carpeta_enfermedad, "modelo_entrenado.pth")
 if not os.path.isfile(ruta_completa_modelo):
     st.error(f"No se pudo encontrar el archivo del modelo: {ruta_completa_modelo}. Asegúrate de que el archivo exista.")
     st.stop()
     
+modelo_seleccionado = cargar_modelo(os.path.join(ruta_carpeta_enfermedad, "modelo_entrenado.pth"), info_enfermedad['num_clases'])
+
 # Subir una imagen
 uploaded_file = st.file_uploader("Elige una imagen...", type=["jpg", "jpeg", "png"])
 
