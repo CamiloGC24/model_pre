@@ -37,8 +37,8 @@ st.title("Diagnóstico de Enfermedades")
 
 # Menú de opciones para seleccionar la enfermedad
 enfermedades = {
-    "Enfermedad A": "modelos/enfermedadA/info.json",
-    "Enfermedad B": "modelos/enfermedadB/info.json",
+    "Enfermedad A": "modelos/pneumonia/info.json",
+    "Enfermedad B": "modelos/tumor_cerebral/info.json",
     # Agregar más enfermedades según sea necesario
 }
 
