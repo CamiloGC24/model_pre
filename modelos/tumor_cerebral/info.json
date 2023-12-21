@@ -1,0 +1,5 @@
+{
+    "nombre": "Tumor cerebreal",
+    "modelo": "modelo_entrenado.pth",
+    "num_clases": 4
+  }

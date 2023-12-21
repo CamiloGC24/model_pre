@@ -1,0 +1,5 @@
+{
+    "nombre": "Pneumonia",
+    "modelo": "modelo_entrenado.pth",
+    "num_clases": 2
+  }

@@ -1,5 +1,4 @@
-torchvision
-torch
-torch.nn
-PIL
-torchvision.models
+torch==2.1.2
+torchvision==0.16.2
+streamlit==1.10.0
+Pillow==9.4.0
