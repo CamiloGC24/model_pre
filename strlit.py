@@ -81,11 +81,12 @@ if uploaded_file is not None:
     clase_predicha = predecir_imagen(modelo_seleccionado, imagen)
 
 
-    st.write("Clase predicha por el modelo:", clase_predicha)
+
+    clase_predicha_str = str(clase_predicha)
 
 
     # Obtener el nombre de la clase a partir del mapeo en info.json
-    nombre_clase_predicha = info_enfermedad['clases'][clase_predicha]
+    nombre_clase_predicha = info_enfermedad['clases'][clase_predicha_str]
 
     # Mostrar la imagen y resultados
     st.image(imagen, caption='Imagen cargada', use_column_width=True)
