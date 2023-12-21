@@ -61,7 +61,6 @@ except Exception as e:
     raise  # Para mostrar el error completo en el registro
 
 # Cargar el modelo seleccionado
-
 ruta_completa_modelo = os.path.join(ruta_carpeta_enfermedad, "modelo_entrenado.pth")
 if not os.path.isfile(ruta_completa_modelo):
     st.error(f"No se pudo encontrar el archivo del modelo: {ruta_completa_modelo}. Asegúrate de que el archivo exista.")
@@ -74,13 +73,15 @@ uploaded_file = st.file_uploader("Elige una imagen...", type=["jpg", "jpeg", "pn
 
 if uploaded_file is not None:
     # Convertir la imagen a formato RGB
-
     imagen = Image.open(uploaded_file).convert('RGB')
 
     # Realizar la predicción
     clase_predicha = predecir_imagen(modelo_seleccionado, imagen)
 
+    # Obtener el nombre de la clase a partir del mapeo en info.json
+    nombre_clase_predicha = info_enfermedad['clases'][clase_predicha]
+
     # Mostrar la imagen y resultados
     st.image(imagen, caption='Imagen cargada', use_column_width=True)
     st.write("Resultado:")
-    st.write(f"Clase predicha para {info_enfermedad['nombre']}: {clase_predicha}")
+    st.write(f"Clase predicha para {info_enfermedad['nombre']}: {nombre_clase_predicha}")

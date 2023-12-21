@@ -1,5 +1,9 @@
 {
     "nombre": "Pneumonia",
     "modelo": "modelo_entrenado.pth",
-    "num_clases": 2
+    "num_clases": 2,
+    "clases": {
+      "0": "Pneumonia",
+      "1": "Sano"
+    }
   }

@@ -1,5 +1,11 @@
 {
     "nombre": "Tumor cerebreal",
     "modelo": "modelo_entrenado.pth",
-    "num_clases": 4
+    "num_clases": 4,
+    "clases": {
+      "0": "Glioma",
+      "1": "Pituitaria",
+      "2": "Sano",
+      "3": "Meningioma"
+    }
   }
