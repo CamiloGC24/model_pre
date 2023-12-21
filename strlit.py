@@ -10,23 +10,9 @@ import json
 # Definir funciones para cargar modelos y realizar predicciones
 def cargar_modelo(modelo_path, num_clases):
     # Obtener la ruta completa al modelo
-
-
     ruta_completa_modelo = os.path.join(modelo_path)
-    st.session_state['answer'] = ''
-
-    st.write(st.session_state)
-
-    realans = ['', 'abc', 'edf']
-
-    if  st.session_state['answer'] in realans:
-        answerStat = "correct"
-    elif st.session_state['answer'] not in realans:
-        answerStat = "incorrect"
-
-    st.write(st.session_state)
-    st.write(answerStat)
-
+    
+    st.write(ruta_completa_modelo)
 
     # Cargar y configurar el modelo según sea necesario
     pretrain_model = resnet50(pretrained=True)
