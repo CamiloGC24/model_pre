@@ -75,11 +75,14 @@ if uploaded_file is not None:
     # Convertir la imagen a formato RGB
     imagen = Image.open(uploaded_file).convert('RGB')
 
-    st.write("Diccionario de clases:", info_enfermedad['clases'])
 
 
     # Realizar la predicción
     clase_predicha = predecir_imagen(modelo_seleccionado, imagen)
+
+
+    st.write("Clase predicha por el modelo:", clase_predicha)
+
 
     # Obtener el nombre de la clase a partir del mapeo en info.json
     nombre_clase_predicha = info_enfermedad['clases'][clase_predicha]
