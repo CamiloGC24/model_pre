@@ -51,7 +51,12 @@ with open(ruta_info_enfermedad, 'r') as json_file:
     info_enfermedad = json.load(json_file)
 
 # Cargar el modelo seleccionado
-modelo_seleccionado = cargar_modelo(info_enfermedad['modelo'], info_enfermedad['num_clases'])
+if os.path.exists(ruta_info_enfermedad):
+    modelo_seleccionado = cargar_modelo(info_enfermedad['modelo'], info_enfermedad['num_clases'])
+
+else:
+    st.error(f"El archivo del modelo no se encuentra en la ruta: {ruta_info_enfermedad}")
+
 
 # Subir una imagen
 uploaded_file = st.file_uploader("Elige una imagen...", type=["jpg", "jpeg", "png"])
