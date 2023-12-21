@@ -17,7 +17,7 @@ def cargar_modelo(modelo_path, num_clases):
     in_features = pretrain_model.fc.in_features
     pretrain_model.fc = nn.Linear(in_features, num_clases)
     modelo_cargado = pretrain_model
-    modelo_cargado.load_state_dict(torch.load(ruta_completa_modelo, map_location=torch.device('cpu')))
+    modelo_cargado.load_state_dict(torch.load(modelo_path, map_location=torch.device('cpu')))
     modelo_cargado.eval()
     return modelo_cargado
 
