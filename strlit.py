@@ -37,8 +37,8 @@ st.title("Diagnóstico de Enfermedades")
 
 # Menú de opciones para seleccionar la enfermedad
 enfermedades = {
-    "Pneumonia": "modelos/pneumonia/info.json",
-    "Tumor Cerebral": "modelos/tumor_cerebral/info.json",
+    "Pneumonia": "modelos/pneumonia/",
+    "Tumor Cerebral": "modelos/tumor_cerebral/",
     # Agregar más enfermedades según sea necesario
 }
 
@@ -47,7 +47,7 @@ enfermedad_seleccionada = st.selectbox("Selecciona la enfermedad a diagnosticar:
 
 # Cargar la información de la enfermedad
 ruta_carpeta_enfermedad = enfermedades[enfermedad_seleccionada]
-ruta_info_enfermedad = os.path.join(ruta_carpeta_enfermedad)
+ruta_info_enfermedad = os.path.join(ruta_carpeta_enfermedad, "info.json")
 
 try:
     with open(ruta_info_enfermedad, 'r') as json_file:
