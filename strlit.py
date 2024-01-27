@@ -8,7 +8,7 @@ from torchvision.models import resnet50
 import json  
 import pydicom
 import numpy as np
-from io import BytesIO
+import pydicom.config
 
 pydicom.config.convert_wrong_length_to_UN = True
 
@@ -88,13 +88,8 @@ if uploaded_file_or_folder is not None:
             else:
                 imagen_pil = Image.open(uploaded_item).convert('RGB')
 
-            # Guardar la imagen convertida a JPEG en un objeto BytesIO
-            buffer = BytesIO()
-            imagen_pil.save(buffer, format='JPEG')
-            buffer.seek(0)
-
             # Realizar la predicción
-            clase_predicha = predecir_imagen(modelo_seleccionado, Image.open(buffer))
+            clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
 
             # Obtener el nombre de la clase a partir del mapeo en info.json
             nombre_clase_predicha = info_enfermedad['clases'][str(clase_predicha)]
@@ -104,7 +99,7 @@ if uploaded_file_or_folder is not None:
 
             # Verificar si la clase predicha es distinta a "Sano"
             if nombre_clase_predicha != "Sano":
-                imagenes_distintas_de_sano_list.append((Image.open(buffer), nombre_clase_predicha))
+                imagenes_distintas_de_sano_list.append((imagen_pil, nombre_clase_predicha))
 
     # Mostrar resultados
     if resultados:
@@ -117,3 +112,4 @@ if uploaded_file_or_folder is not None:
         st.write("Imágenes distintas a 'Sano':")
         for imagen, clase_predicha in imagenes_distintas_de_sano_list:
             st.image(imagen, caption=f"Clase predicha: {clase_predicha}", use_column_width=True)
+
