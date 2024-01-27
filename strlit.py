@@ -5,12 +5,13 @@ import torch.nn as nn
 from PIL import Image
 import os
 from torchvision.models import resnet50
-import json  
+import json
 import pydicom
 import numpy as np
 import pydicom.config
 
 pydicom.config.convert_wrong_length_to_UN = True
+
 
 # Definir funciones para cargar modelos y realizar predicciones
 def cargar_modelo(modelo_path, num_clases):
@@ -88,6 +89,10 @@ if uploaded_file_or_folder is not None:
             else:
                 imagen_pil = Image.open(uploaded_item).convert('RGB')
 
+            # Guardar la imagen como JPEG temporalmente
+            imagen_temp_jpeg_path = f"temp_{uploaded_item.name}.jpeg"
+            imagen_pil.save(imagen_temp_jpeg_path, format="JPEG")
+
             # Realizar la predicción
             clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
 
@@ -101,6 +106,9 @@ if uploaded_file_or_folder is not None:
             if nombre_clase_predicha != "Sano":
                 imagenes_distintas_de_sano_list.append((imagen_pil, nombre_clase_predicha))
 
+            # Eliminar la imagen temporal
+            os.remove(imagen_temp_jpeg_path)
+
     # Mostrar resultados
     if resultados:
         st.write("Resultados:")
@@ -112,4 +120,5 @@ if uploaded_file_or_folder is not None:
         st.write("Imágenes distintas a 'Sano':")
         for imagen, clase_predicha in imagenes_distintas_de_sano_list:
             st.image(imagen, caption=f"Clase predicha: {clase_predicha}", use_column_width=True)
+
 
