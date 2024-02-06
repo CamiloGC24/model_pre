@@ -10,6 +10,7 @@ import pydicom
 import numpy as np
 import io
 
+# Configuración para manejar archivos DICOM con datos de longitud incorrecta
 pydicom.config.convert_wrong_length_to_UN = True
 
 def cargar_modelo(modelo_path, num_clases):
@@ -32,22 +33,16 @@ def predecir_imagen(modelo, imagen):
     _, predicted = torch.max(outputs, 1)
     return predicted.item()
 
-# Función para manejar la conversión de imágenes, incluyendo DICOM
-def convertir_imagen(uploaded_item):
-    if uploaded_item.type == "application/octet-stream":  # Asumiendo DICOM
-        dicom_data = pydicom.dcmread(uploaded_item, force=True)
-        imagen_array = dicom_data.pixel_array
-        # Normalización a 8 bits si es necesario
-        if np.amax(imagen_array) > 255:
-            imagen_array = (imagen_array / np.amax(imagen_array)) * 255
-        imagen_array = imagen_array.astype(np.uint8)
-        if len(imagen_array.shape) == 2:  # Imagen en escala de grises
-            imagen_pil = Image.fromarray(imagen_array).convert('RGB')
-        else:  # Imagen ya es RGB
-            imagen_pil = Image.fromarray(imagen_array)
+def convertir_dicom_a_pil(dicom_data):
+    pixel_array = dicom_data.pixel_array
+    if np.amin(pixel_array) < 0:
+        pixel_array += np.abs(np.amin(pixel_array))
+    scaled_array = (np.maximum(pixel_array, 0) / pixel_array.max()) * 255.0
+    scaled_array = np.uint8(scaled_array)
+    if len(scaled_array.shape) == 2:
+        imagen_pil = Image.fromarray(scaled_array).convert('RGB')
     else:
-        contenido = uploaded_item.read()
-        imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
+        imagen_pil = Image.fromarray(scaled_array)
     return imagen_pil
 
 st.title("Diagnóstico de Enfermedades")
@@ -65,11 +60,8 @@ ruta_info_enfermedad = os.path.join(ruta_carpeta_enfermedad, "info.json")
 try:
     with open(ruta_info_enfermedad, 'r') as json_file:
         info_enfermedad = json.load(json_file)
-except FileNotFoundError:
-    st.error(f"No se pudo encontrar el archivo {ruta_info_enfermedad}.")
-    raise FileNotFoundError(f"No se pudo encontrar el archivo {ruta_info_enfermedad}.")
 except Exception as e:
-    st.error(f"Error al leer el archivo {ruta_info_enfermedad}: {e}")
+    st.error(f"Error al leer el archivo {ruta_info_enfermedad}: {str(e)}")
     raise e
 
 ruta_completa_modelo = os.path.join(ruta_carpeta_enfermedad, "modelo_entrenado.pth")
@@ -86,15 +78,23 @@ if uploaded_file_or_folder is not None:
     imagenes_distintas_de_sano_list = []
 
     for uploaded_item in uploaded_file_or_folder:
-        try:
-            imagen_pil = convertir_imagen(uploaded_item)
-            clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
-            nombre_clase_predicha = info_enfermedad['clases'][str(clase_predicha)]
-            resultados.append({"imagen": uploaded_item.name, "clase_predicha": nombre_clase_predicha})
-            if nombre_clase_predicha != "Sano":
-                imagenes_distintas_de_sano_list.append((imagen_pil, nombre_clase_predicha))
-        except Exception as e:
-            st.error(f"Error al procesar el archivo {uploaded_item.name}: {e}")
+        if uploaded_item.type == "application/octet-stream":  # Suponiendo DICOM
+            dicom_data = pydicom.dcmread(uploaded_item, force=True)
+            try:
+                imagen_pil = convertir_dicom_a_pil(dicom_data)
+            except Exception as e:
+                st.error(f"Error al procesar el archivo DICOM {uploaded_item.name}: {e}")
+                continue
+        else:
+            contenido = uploaded_item.read()
+            imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
+
+        clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
+        nombre_clase_predicha = info_enfermedad['clases'][str(clase_predicha)]
+        resultados.append({"imagen": uploaded_item.name, "clase_predicha": nombre_clase_predicha})
+
+        if nombre_clase_predicha != "Sano":
+            imagenes_distintas_de_sano_list.append((imagen_pil, nombre_clase_predicha))
 
     if resultados:
         st.write("Resultados:")
@@ -105,5 +105,4 @@ if uploaded_file_or_folder is not None:
         st.write("Imágenes distintas a 'Sano':")
         for imagen, clase_predicha in imagenes_distintas_de_sano_list:
             st.image(imagen, caption=f"Clase predicha: {clase_predicha}", use_column_width=True)
-
 
