@@ -8,10 +8,9 @@ from torchvision.models import resnet50
 import json
 import pydicom
 import numpy as np
-import pydicom.config
 
+# Configuración para manejar archivos DICOM con datos de longitud incorrecta
 pydicom.config.convert_wrong_length_to_UN = True
-
 
 # Definir funciones para cargar modelos y realizar predicciones
 def cargar_modelo(modelo_path, num_clases):
@@ -55,9 +54,10 @@ try:
         info_enfermedad = json.load(json_file)
 except FileNotFoundError:
     st.error(f"No se pudo encontrar el archivo {ruta_info_enfermedad}. Verifica la ruta y asegúrate de que el archivo exista.")
+    raise FileNotFoundError(f"No se pudo encontrar el archivo {ruta_info_enfermedad}.")
 except Exception as e:
     st.error(f"Error al leer el archivo {ruta_info_enfermedad}: {str(e)}")
-    raise  # Para mostrar el error completo en el registro
+    raise e  # Para mostrar el error completo en el registro
 
 # Cargar el modelo seleccionado
 ruta_completa_modelo = os.path.join(ruta_carpeta_enfermedad, "modelo_entrenado.pth")
@@ -77,37 +77,35 @@ if uploaded_file_or_folder is not None:
 
     # Recorrer archivos en caso de que se haya subido una carpeta
     for uploaded_item in uploaded_file_or_folder:
-        if isinstance(uploaded_item, st.uploaded_file_manager.UploadedFile):
-            # Convertir la imagen DICOM a formato RGB si es necesario
-            if uploaded_item.type == "dcm":
-                dicom_data = pydicom.dcmread(uploaded_item)
-                if 'PixelData' not in dicom_data:
-                    st.warning(f"La imagen DICOM {uploaded_item.name} no contiene información de píxeles.")
-                    continue
+        if uploaded_item.type == "application/octet-stream":  # Streamlit puede usar este tipo MIME para archivos DICOM
+            try:
+                dicom_data = pydicom.dcmread(uploaded_item, force=True)
                 imagen_array = dicom_data.pixel_array
-                imagen_pil = Image.fromarray(np.uint8(imagen_array))
-            else:
-                imagen_pil = Image.open(uploaded_item).convert('RGB')
+                if np.amax(imagen_array) > 255:  # Normalizar si es necesario
+                    imagen_array = (imagen_array / np.amax(imagen_array)) * 255
+                imagen_array = imagen_array.astype(np.uint8)
+                if len(imagen_array.shape) == 2:  # Imagen en escala de grises
+                    imagen_pil = Image.fromarray(imagen_array).convert('RGB')
+                else:  # Imagen ya es RGB
+                    imagen_pil = Image.fromarray(imagen_array)
+            except Exception as e:
+                st.error(f"Error al procesar el archivo DICOM {uploaded_item.name}: {e}")
+                continue
+        else:  # Para otros tipos de archivos como JPG, JPEG, PNG
+            imagen_pil = Image.open(uploaded_item).convert('RGB')
 
-            # Guardar la imagen como JPEG temporalmente
-            imagen_temp_jpeg_path = f"temp_{uploaded_item.name}.jpeg"
-            imagen_pil.save(imagen_temp_jpeg_path, format="JPEG")
+        # Realizar la predicción
+        clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
 
-            # Realizar la predicción
-            clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
+        # Obtener el nombre de la clase a partir del mapeo en info.json
+        nombre_clase_predicha = info_enfermedad['clases'][str(clase_predicha)]
 
-            # Obtener el nombre de la clase a partir del mapeo en info.json
-            nombre_clase_predicha = info_enfermedad['clases'][str(clase_predicha)]
+        # Guardar resultados
+        resultados.append({"imagen": uploaded_item.name, "clase_predicha": nombre_clase_predicha})
 
-            # Guardar resultados
-            resultados.append({"imagen": uploaded_item.name, "clase_predicha": nombre_clase_predicha})
-
-            # Verificar si la clase predicha es distinta a "Sano"
-            if nombre_clase_predicha != "Sano":
-                imagenes_distintas_de_sano_list.append((imagen_pil, nombre_clase_predicha))
-
-            # Eliminar la imagen temporal
-            os.remove(imagen_temp_jpeg_path)
+        # Verificar si la clase predicha es distinta a "Sano"
+        if nombre_clase_predicha != "Sano":
+            imagenes_distintas_de_sano_list.append((imagen_pil, nombre_clase_predicha))
 
     # Mostrar resultados
     if resultados:
