@@ -78,8 +78,12 @@ if uploaded_file_or_folder is not None:
     imagenes_distintas_de_sano_list = []
 
     for uploaded_item in uploaded_file_or_folder:
-        dicom_data = pydicom.dcmread(uploaded_item, force=True)
-        imagen_pil = convertir_dicom_a_pil(dicom_data)
+        if uploaded_item.type == "application/octet-stream":  # Suponiendo DICOM
+            dicom_data = pydicom.dcmread(uploaded_item, force=True)
+            imagen_pil = convertir_dicom_a_pil(dicom_data)
+        else:  # Para otros tipos de archivos como JPG, JPEG, PNG
+            contenido = uploaded_item.read()
+            imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
 
                 # Continuar desde donde se detectó el error
         clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
@@ -98,5 +102,3 @@ if uploaded_file_or_folder is not None:
         st.write("Imágenes distintas a 'Sano':")
         for imagen, clase_predicha in imagenes_distintas_de_sano_list:
             st.image(imagen, caption=f"Clase predicha: {clase_predicha}", use_column_width=True)
-
-
