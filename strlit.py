@@ -35,14 +35,14 @@ def predecir_imagen(modelo, imagen):
 
 def convertir_dicom_a_pil(dicom_data):
     pixel_array = dicom_data.pixel_array
+    # Ajuste para imágenes en escalas de grises o RGB
+    if len(pixel_array.shape) == 2:  # Escala de grises
+        pixel_array = np.stack((pixel_array,)*3, axis=-1)  # Convertir a RGB
     if np.amin(pixel_array) < 0:
         pixel_array += np.abs(np.amin(pixel_array))
     scaled_array = (np.maximum(pixel_array, 0) / pixel_array.max()) * 255.0
     scaled_array = np.uint8(scaled_array)
-    if len(scaled_array.shape) == 2:
-        imagen_pil = Image.fromarray(scaled_array).convert('RGB')
-    else:
-        imagen_pil = Image.fromarray(scaled_array)
+    imagen_pil = Image.fromarray(scaled_array)
     return imagen_pil
 
 st.title("Diagnóstico de Enfermedades")
@@ -80,29 +80,10 @@ if uploaded_file_or_folder is not None:
     for uploaded_item in uploaded_file_or_folder:
         if uploaded_item.type == "application/octet-stream":  # Suponiendo DICOM
             dicom_data = pydicom.dcmread(uploaded_item, force=True)
-            try:
-                imagen_pil = convertir_dicom_a_pil(dicom_data)
-            except Exception as e:
-                st.error(f"Error al procesar el archivo DICOM {uploaded_item.name}: {e}")
-                continue
-        else:
+            imagen_pil = convertir_dicom_a_pil(dicom_data)
+        else:  # Para otros tipos de archivos como JPG, JPEG, PNG
             contenido = uploaded_item.read()
             imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
 
-        clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
-        nombre_clase_predicha = info_enfermedad['clases'][str(clase_predicha)]
-        resultados.append({"imagen": uploaded_item.name, "clase_predicha": nombre_clase_predicha})
-
-        if nombre_clase_predicha != "Sano":
-            imagenes_distintas_de_sano_list.append((imagen_pil, nombre_clase_predicha))
-
-    if resultados:
-        st.write("Resultados:")
-        for resultado in resultados:
-            st.write(f"Imagen: {resultado['imagen']}, Clase Predicha: {resultado['clase_predicha']}")
-
-    if imagenes_distintas_de_sano_list:
-        st.write("Imágenes distintas a 'Sano':")
-        for imagen, clase_predicha in imagenes_distintas_de_sano_list:
-            st.image(imagen, caption=f"Clase predicha: {clase_predicha}", use_column_width=True)
+        clase
 
