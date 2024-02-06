@@ -85,5 +85,22 @@ if uploaded_file_or_folder is not None:
             contenido = uploaded_item.read()
             imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
 
-        clase
+                # Continuar desde donde se detectó el error
+        clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
+        nombre_clase_predicha = info_enfermedad['clases'][str(clase_predicha)]
+        resultados.append({"imagen": uploaded_item.name, "clase_predicha": nombre_clase_predicha})
+
+        if nombre_clase_predicha != "Sano":
+            imagenes_distintas_de_sano_list.append((imagen_pil, nombre_clase_predicha))
+
+    if resultados:
+        st.write("Resultados:")
+        for resultado in resultados:
+            st.write(f"Imagen: {resultado['imagen']}, Clase Predicha: {resultado['clase_predicha']}")
+
+    if imagenes_distintas_de_sano_list:
+        st.write("Imágenes distintas a 'Sano':")
+        for imagen, clase_predicha in imagenes_distintas_de_sano_list:
+            st.image(imagen, caption=f"Clase predicha: {clase_predicha}", use_column_width=True)
+
 
