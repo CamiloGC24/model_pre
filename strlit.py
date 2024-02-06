@@ -78,12 +78,8 @@ if uploaded_file_or_folder is not None:
     imagenes_distintas_de_sano_list = []
 
     for uploaded_item in uploaded_file_or_folder:
-        if uploaded_item.type == "application/octet-stream":  # Suponiendo DICOM
-            dicom_data = pydicom.dcmread(uploaded_item, force=True)
-            imagen_pil = convertir_dicom_a_pil(dicom_data)
-        else:  # Para otros tipos de archivos como JPG, JPEG, PNG
-            contenido = uploaded_item.read()
-            imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
+        dicom_data = pydicom.dcmread(uploaded_item, force=True)
+        imagen_pil = convertir_dicom_a_pil(dicom_data)
 
                 # Continuar desde donde se detectó el error
         clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
