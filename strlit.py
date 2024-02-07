@@ -79,16 +79,24 @@ if uploaded_file_or_folder is not None:
     imagenes_distintas_de_sano_list = []
 
     for uploaded_item in uploaded_file_or_folder:
-        try:
-            # Lee el contenido del archivo subido
-            contenido = uploaded_item.read()
-            # Intenta abrir como DICOM
-            dicom_data = pydicom.dcmread(io.BytesIO(contenido), force=True)
-            imagen_pil = convertir_dicom_a_pil(dicom_data)
-        except Exception as e:
-            # Maneja archivos que no son DICOM o DICOM sin datos de imagen
-            st.error(f"No se pudo procesar el archivo DICOM {uploaded_item.name}: {e}")
-            continue
+        contenido = uploaded_item.read()
+        file_extension = uploaded_item.name.split('.')[-1].lower()  # Obtiene la extensión del archivo
+        
+        if file_extension not in ['png', 'jpg', 'jpeg']:
+            # Intenta procesar como DICOM
+            try:
+                dicom_data = pydicom.dcmread(io.BytesIO(contenido), force=True)
+                imagen_pil = convertir_dicom_a_pil(dicom_data)
+            except Exception as e:
+                st.error(f"No se pudo procesar el archivo {uploaded_item.name} como DICOM: {e}")
+                continue
+        else:
+            # Procesa como imagen regular
+            try:
+                imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
+            except IOError as e:
+                st.error(f"Error al procesar el archivo de imagen {uploaded_item.name}: {e}")
+                continue
 
         # Realiza la predicción con el modelo
         clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
