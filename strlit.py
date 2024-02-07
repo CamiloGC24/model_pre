@@ -3,12 +3,12 @@ from torchvision import transforms
 import torch
 import torch.nn as nn
 from PIL import Image
+import os
 from torchvision.models import resnet50
 import json
 import pydicom
 import numpy as np
 import io
-import os
 
 # Configuración para manejar archivos DICOM con datos de longitud incorrecta
 pydicom.config.convert_wrong_length_to_UN = True
@@ -39,7 +39,7 @@ def convertir_dicom_a_pil(dicom_data):
     
     pixel_array = dicom_data.pixel_array
     if pixel_array.dtype != np.uint8:
-        pixel_array = ((pixel_array - pixel_array.min()) / (pixel_array.max() - pixel_array.min())) * 255
+        pixel_array = ((pixel_array - pixel_array.min()) / pixel_array.ptp()) * 255
     pixel_array = np.uint8(pixel_array)
     if len(pixel_array.shape) == 2:  # Escala de grises
         pixel_array = np.stack((pixel_array,)*3, axis=-1)  # Convertir a RGB
@@ -55,43 +55,42 @@ enfermedades = {
 
 enfermedad_seleccionada = st.selectbox("Selecciona la enfermedad a diagnosticar:", list(enfermedades.keys()))
 
-if enfermedad_seleccionada in enfermedades:
-    ruta_carpeta_enfermedad = enfermedades[enfermedad_seleccionada]
-    ruta_info_enfermedad = os.path.join(ruta_carpeta_enfermedad, "info.json")
+ruta_carpeta_enfermedad = enfermedades[enfermedad_seleccionada]
+ruta_info_enfermedad = os.path.join(ruta_carpeta_enfermedad, "info.json")
 
-    try:
-        with open(ruta_info_enfermedad, 'r') as json_file:
-            info_enfermedad = json.load(json_file)
-    except Exception as e:
-        st.error(f"Error al leer el archivo {ruta_info_enfermedad}: {str(e)}")
-        st.stop()
+try:
+    with open(ruta_info_enfermedad, 'r') as json_file:
+        info_enfermedad = json.load(json_file)
+except Exception as e:
+    st.error(f"Error al leer el archivo {ruta_info_enfermedad}: {str(e)}")
+    raise e
 
-    ruta_completa_modelo = os.path.join(ruta_carpeta_enfermedad, "modelo_entrenado.pth")
-    if not os.path.isfile(ruta_completa_modelo):
-        st.error(f"No se pudo encontrar el archivo del modelo: {ruta_completa_modelo}.")
-        st.stop()
-
-    modelo_seleccionado = cargar_modelo(ruta_completa_modelo, info_enfermedad['num_clases'])
-else:
-    st.error("Selección de enfermedad no válida.")
+ruta_completa_modelo = os.path.join(ruta_carpeta_enfermedad, "modelo_entrenado.pth")
+if not os.path.isfile(ruta_completa_modelo):
+    st.error(f"No se pudo encontrar el archivo del modelo: {ruta_completa_modelo}.")
     st.stop()
 
-uploaded_file_or_folder = st.file_uploader("Elige una imagen o carpeta...", type=["*"], accept_multiple_files=True)
+modelo_seleccionado = cargar_modelo(ruta_completa_modelo, info_enfermedad['num_clases'])
+
+uploaded_file_or_folder = st.file_uploader("Elige una imagen o carpeta...", type=["jpg", "jpeg", "png", "dcm"], accept_multiple_files=True)
 
 if uploaded_file_or_folder is not None:
     resultados = []
     imagenes_distintas_de_sano_list = []
 
     for uploaded_item in uploaded_file_or_folder:
-        contenido = uploaded_item.read()
         try:
-            # Intenta procesar como DICOM
+            # Lee el contenido del archivo subido
+            contenido = uploaded_item.read()
+            # Intenta abrir como DICOM
             dicom_data = pydicom.dcmread(io.BytesIO(contenido), force=True)
             imagen_pil = convertir_dicom_a_pil(dicom_data)
         except Exception as e:
+            # Maneja archivos que no son DICOM o DICOM sin datos de imagen
             st.error(f"No se pudo procesar el archivo DICOM {uploaded_item.name}: {e}")
             continue
 
+        # Realiza la predicción con el modelo
         clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
         nombre_clase_predicha = info_enfermedad['clases'][str(clase_predicha)]
         resultados.append({"imagen": uploaded_item.name, "clase_predicha": nombre_clase_predicha})
@@ -99,6 +98,7 @@ if uploaded_file_or_folder is not None:
         if nombre_clase_predicha != "Sano":
             imagenes_distintas_de_sano_list.append((imagen_pil, nombre_clase_predicha))
 
+    # Muestra los resultados de la predicción
     if resultados:
         st.write("Resultados:")
         for resultado in resultados:
