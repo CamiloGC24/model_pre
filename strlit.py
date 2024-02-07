@@ -72,7 +72,7 @@ if not os.path.isfile(ruta_completa_modelo):
 
 modelo_seleccionado = cargar_modelo(ruta_completa_modelo, info_enfermedad['num_clases'])
 
-uploaded_file_or_folder = st.file_uploader("Elige una imagen o carpeta...", type=["jpg", "jpeg", "png", "dcm"], accept_multiple_files=True)
+uploaded_file_or_folder = st.file_uploader("Elige una imagen o carpeta...", type=["jpg", "jpeg", "png", ""], accept_multiple_files=True)
 
 if uploaded_file_or_folder is not None:
     resultados = []
