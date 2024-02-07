@@ -8,6 +8,7 @@ import json
 import pydicom
 import numpy as np
 import io
+import os
 
 # Configuración para manejar archivos DICOM con datos de longitud incorrecta
 pydicom.config.convert_wrong_length_to_UN = True
@@ -54,23 +55,26 @@ enfermedades = {
 
 enfermedad_seleccionada = st.selectbox("Selecciona la enfermedad a diagnosticar:", list(enfermedades.keys()))
 
-ruta_carpeta_enfermedad = enfermedades[enfermedad_seleccionada]
-ruta_info_enfermedad = os.path.join(ruta_carpeta_enfermedad, "info.json")
+if enfermedad_seleccionada in enfermedades:
+    ruta_carpeta_enfermedad = enfermedades[enfermedad_seleccionada]
+    ruta_info_enfermedad = os.path.join(ruta_carpeta_enfermedad, "info.json")
 
-try:
-    with open(ruta_info_enfermedad, 'r') as json_file:
-        info_enfermedad = json.load(json_file)
-except Exception as e:
-    st.error(f"Error al leer el archivo {ruta_info_enfermedad}: {str(e)}")
-    # Consider using 'st.stop()' here if you want to halt the execution upon error
-    # st.stop()
+    try:
+        with open(ruta_info_enfermedad, 'r') as json_file:
+            info_enfermedad = json.load(json_file)
+    except Exception as e:
+        st.error(f"Error al leer el archivo {ruta_info_enfermedad}: {str(e)}")
+        st.stop()
 
-ruta_completa_modelo = os.path.join(ruta_carpeta_enfermedad, "modelo_entrenado.pth")
-if not os.path.isfile(ruta_completa_modelo):
-    st.error(f"No se pudo encontrar el archivo del modelo: {ruta_completa_modelo}.")
+    ruta_completa_modelo = os.path.join(ruta_carpeta_enfermedad, "modelo_entrenado.pth")
+    if not os.path.isfile(ruta_completa_modelo):
+        st.error(f"No se pudo encontrar el archivo del modelo: {ruta_completa_modelo}.")
+        st.stop()
+
+    modelo_seleccionado = cargar_modelo(ruta_completa_modelo, info_enfermedad['num_clases'])
+else:
+    st.error("Selección de enfermedad no válida.")
     st.stop()
-
-modelo_seleccionado = cargar_modelo(ruta_completa_modelo, info_enfermedad['num_clases'])
 
 uploaded_file_or_folder = st.file_uploader("Elige una imagen o carpeta...", type=["*"], accept_multiple_files=True)
 
@@ -80,19 +84,13 @@ if uploaded_file_or_folder is not None:
 
     for uploaded_item in uploaded_file_or_folder:
         contenido = uploaded_item.read()
-        file_extension = uploaded_item.name.split('.')[-1].lower()
-        
-        if file_extension not in ['png', 'jpg', 'jpeg']:
-            try:
-                # Intenta procesar como DICOM
-                dicom_data = pydicom.dcmread(io.BytesIO(contenido), force=True)
-                imagen_pil = convertir_dicom_a_pil(dicom_data)
-            except Exception as e:
-                st.error(f"No se pudo procesar el archivo {uploaded_item.name} como DICOM: {e}")
-                continue
-        else:
-            # Procesa como imagen regular
-            imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
+        try:
+            # Intenta procesar como DICOM
+            dicom_data = pydicom.dcmread(io.BytesIO(contenido), force=True)
+            imagen_pil = convertir_dicom_a_pil(dicom_data)
+        except Exception as e:
+            st.error(f"No se pudo procesar el archivo DICOM {uploaded_item.name}: {e}")
+            continue
 
         clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
         nombre_clase_predicha = info_enfermedad['clases'][str(clase_predicha)]
