@@ -34,6 +34,9 @@ def predecir_imagen(modelo, imagen):
     return predicted.item()
 
 def convertir_dicom_a_pil(dicom_data):
+    if 'PixelData' not in dicom_data:
+        raise ValueError("El archivo DICOM no contiene datos de imagen.")
+    
     pixel_array = dicom_data.pixel_array
     if pixel_array.dtype != np.uint8:
         pixel_array = ((pixel_array - pixel_array.min()) / pixel_array.ptp()) * 255
@@ -76,22 +79,18 @@ if uploaded_file_or_folder is not None:
     imagenes_distintas_de_sano_list = []
 
     for uploaded_item in uploaded_file_or_folder:
-        contenido = uploaded_item.read()
         try:
-            # Intenta tratar el archivo como DICOM
+            # Lee el contenido del archivo subido
+            contenido = uploaded_item.read()
+            # Intenta abrir como DICOM
             dicom_data = pydicom.dcmread(io.BytesIO(contenido), force=True)
             imagen_pil = convertir_dicom_a_pil(dicom_data)
-        except Exception as dicom_error:
-            # Si falla, informa el error específico de DICOM
-            st.error(f"Error al procesar el archivo DICOM {uploaded_item.name}: {dicom_error}")
-            # Intenta como imagen regular solo si el error no es de tipo DICOM
-            try:
-                imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
-            except Exception as image_error:
-                st.error(f"No se pudo procesar el archivo {uploaded_item.name} como imagen regular: {image_error}")
-                continue
+        except Exception as e:
+            # Maneja archivos que no son DICOM o DICOM sin datos de imagen
+            st.error(f"No se pudo procesar el archivo DICOM {uploaded_item.name}: {e}")
+            continue
 
-        # Si se llega a este punto, 'imagen_pil' contiene una imagen válida
+        # Realiza la predicción con el modelo
         clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
         nombre_clase_predicha = info_enfermedad['clases'][str(clase_predicha)]
         resultados.append({"imagen": uploaded_item.name, "clase_predicha": nombre_clase_predicha})
@@ -99,7 +98,7 @@ if uploaded_file_or_folder is not None:
         if nombre_clase_predicha != "Sano":
             imagenes_distintas_de_sano_list.append((imagen_pil, nombre_clase_predicha))
 
-
+    # Muestra los resultados de la predicción
     if resultados:
         st.write("Resultados:")
         for resultado in resultados:
