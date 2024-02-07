@@ -76,27 +76,29 @@ if uploaded_file_or_folder is not None:
     imagenes_distintas_de_sano_list = []
 
     for uploaded_item in uploaded_file_or_folder:
-        # Intenta procesar cada archivo subido primero como DICOM
+        contenido = uploaded_item.read()
         try:
-            # Lee el contenido del archivo subido
-            contenido = uploaded_item.read()
-            # Intenta abrir como DICOM
+            # Intenta tratar el archivo como DICOM
             dicom_data = pydicom.dcmread(io.BytesIO(contenido), force=True)
             imagen_pil = convertir_dicom_a_pil(dicom_data)
-        except Exception:
-            # Si falla, intenta como imagen regular
+        except Exception as dicom_error:
+            # Si falla, informa el error específico de DICOM
+            st.error(f"Error al procesar el archivo DICOM {uploaded_item.name}: {dicom_error}")
+            # Intenta como imagen regular solo si el error no es de tipo DICOM
             try:
                 imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
-            except IOError as e:
-                st.error(f"No se pudo procesar el archivo {uploaded_item.name}: {e}")
+            except Exception as image_error:
+                st.error(f"No se pudo procesar el archivo {uploaded_item.name} como imagen regular: {image_error}")
                 continue
 
+        # Si se llega a este punto, 'imagen_pil' contiene una imagen válida
         clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
         nombre_clase_predicha = info_enfermedad['clases'][str(clase_predicha)]
         resultados.append({"imagen": uploaded_item.name, "clase_predicha": nombre_clase_predicha})
 
         if nombre_clase_predicha != "Sano":
             imagenes_distintas_de_sano_list.append((imagen_pil, nombre_clase_predicha))
+
 
     if resultados:
         st.write("Resultados:")
