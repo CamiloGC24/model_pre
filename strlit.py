@@ -3,7 +3,6 @@ from torchvision import transforms
 import torch
 import torch.nn as nn
 from PIL import Image
-import os
 from torchvision.models import resnet50
 import json
 import pydicom
@@ -39,7 +38,7 @@ def convertir_dicom_a_pil(dicom_data):
     
     pixel_array = dicom_data.pixel_array
     if pixel_array.dtype != np.uint8:
-        pixel_array = ((pixel_array - pixel_array.min()) / pixel_array.ptp()) * 255
+        pixel_array = ((pixel_array - pixel_array.min()) / (pixel_array.max() - pixel_array.min())) * 255
     pixel_array = np.uint8(pixel_array)
     if len(pixel_array.shape) == 2:  # Escala de grises
         pixel_array = np.stack((pixel_array,)*3, axis=-1)  # Convertir a RGB
@@ -63,7 +62,8 @@ try:
         info_enfermedad = json.load(json_file)
 except Exception as e:
     st.error(f"Error al leer el archivo {ruta_info_enfermedad}: {str(e)}")
-    raise e
+    # Consider using 'st.stop()' here if you want to halt the execution upon error
+    # st.stop()
 
 ruta_completa_modelo = os.path.join(ruta_carpeta_enfermedad, "modelo_entrenado.pth")
 if not os.path.isfile(ruta_completa_modelo):
@@ -72,7 +72,7 @@ if not os.path.isfile(ruta_completa_modelo):
 
 modelo_seleccionado = cargar_modelo(ruta_completa_modelo, info_enfermedad['num_clases'])
 
-uploaded_file_or_folder = st.file_uploader("Elige una imagen o carpeta...", type=["jpg", "jpeg", "png", "dcm"], accept_multiple_files=True)
+uploaded_file_or_folder = st.file_uploader("Elige una imagen o carpeta...", type=["*"], accept_multiple_files=True)
 
 if uploaded_file_or_folder is not None:
     resultados = []
@@ -80,11 +80,11 @@ if uploaded_file_or_folder is not None:
 
     for uploaded_item in uploaded_file_or_folder:
         contenido = uploaded_item.read()
-        file_extension = uploaded_item.name.split('.')[-1].lower()  # Obtiene la extensión del archivo
+        file_extension = uploaded_item.name.split('.')[-1].lower()
         
         if file_extension not in ['png', 'jpg', 'jpeg']:
-            # Intenta procesar como DICOM
             try:
+                # Intenta procesar como DICOM
                 dicom_data = pydicom.dcmread(io.BytesIO(contenido), force=True)
                 imagen_pil = convertir_dicom_a_pil(dicom_data)
             except Exception as e:
@@ -92,13 +92,8 @@ if uploaded_file_or_folder is not None:
                 continue
         else:
             # Procesa como imagen regular
-            try:
-                imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
-            except IOError as e:
-                st.error(f"Error al procesar el archivo de imagen {uploaded_item.name}: {e}")
-                continue
+            imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
 
-        # Realiza la predicción con el modelo
         clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
         nombre_clase_predicha = info_enfermedad['clases'][str(clase_predicha)]
         resultados.append({"imagen": uploaded_item.name, "clase_predicha": nombre_clase_predicha})
@@ -106,7 +101,6 @@ if uploaded_file_or_folder is not None:
         if nombre_clase_predicha != "Sano":
             imagenes_distintas_de_sano_list.append((imagen_pil, nombre_clase_predicha))
 
-    # Muestra los resultados de la predicción
     if resultados:
         st.write("Resultados:")
         for resultado in resultados:
