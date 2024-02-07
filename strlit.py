@@ -35,14 +35,12 @@ def predecir_imagen(modelo, imagen):
 
 def convertir_dicom_a_pil(dicom_data):
     pixel_array = dicom_data.pixel_array
-    # Ajuste para imágenes en escalas de grises o RGB
+    if pixel_array.dtype != np.uint8:
+        pixel_array = ((pixel_array - pixel_array.min()) / pixel_array.ptp()) * 255
+    pixel_array = np.uint8(pixel_array)
     if len(pixel_array.shape) == 2:  # Escala de grises
         pixel_array = np.stack((pixel_array,)*3, axis=-1)  # Convertir a RGB
-    if np.amin(pixel_array) < 0:
-        pixel_array += np.abs(np.amin(pixel_array))
-    scaled_array = (np.maximum(pixel_array, 0) / pixel_array.max()) * 255.0
-    scaled_array = np.uint8(scaled_array)
-    imagen_pil = Image.fromarray(scaled_array)
+    imagen_pil = Image.fromarray(pixel_array)
     return imagen_pil
 
 st.title("Diagnóstico de Enfermedades")
@@ -78,14 +76,21 @@ if uploaded_file_or_folder is not None:
     imagenes_distintas_de_sano_list = []
 
     for uploaded_item in uploaded_file_or_folder:
-        if uploaded_item.type == "application/octet-stream":  # Suponiendo DICOM
-            dicom_data = pydicom.dcmread(uploaded_item, force=True)
-            imagen_pil = convertir_dicom_a_pil(dicom_data)
-        else:  # Para otros tipos de archivos como JPG, JPEG, PNG
+        # Intenta procesar cada archivo subido primero como DICOM
+        try:
+            # Lee el contenido del archivo subido
             contenido = uploaded_item.read()
-            imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
+            # Intenta abrir como DICOM
+            dicom_data = pydicom.dcmread(io.BytesIO(contenido), force=True)
+            imagen_pil = convertir_dicom_a_pil(dicom_data)
+        except Exception:
+            # Si falla, intenta como imagen regular
+            try:
+                imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
+            except IOError as e:
+                st.error(f"No se pudo procesar el archivo {uploaded_item.name}: {e}")
+                continue
 
-                # Continuar desde donde se detectó el error
         clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
         nombre_clase_predicha = info_enfermedad['clases'][str(clase_predicha)]
         resultados.append({"imagen": uploaded_item.name, "clase_predicha": nombre_clase_predicha})
