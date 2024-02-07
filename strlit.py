@@ -72,25 +72,26 @@ if not os.path.isfile(ruta_completa_modelo):
 
 modelo_seleccionado = cargar_modelo(ruta_completa_modelo, info_enfermedad['num_clases'])
 
-uploaded_file_or_folder = st.file_uploader("Elige una imagen o carpeta...", type=["jpg", "jpeg", "png", "dcm"], accept_multiple_files=True)
+uploaded_file_or_folder = st.file_uploader("Elige una imagen o carpeta...", type=["*"], accept_multiple_files=True)
 
 if uploaded_file_or_folder is not None:
     resultados = []
     imagenes_distintas_de_sano_list = []
 
     for uploaded_item in uploaded_file_or_folder:
+        contenido = uploaded_item.read()
         try:
-            # Lee el contenido del archivo subido
-            contenido = uploaded_item.read()
-            # Intenta abrir como DICOM
+            # Intenta tratar el archivo como DICOM
             dicom_data = pydicom.dcmread(io.BytesIO(contenido), force=True)
             imagen_pil = convertir_dicom_a_pil(dicom_data)
         except Exception as e:
-            # Maneja archivos que no son DICOM o DICOM sin datos de imagen
-            st.error(f"No se pudo procesar el archivo DICOM {uploaded_item.name}: {e}")
-            continue
+            # Si falla, intenta como imagen regular
+            try:
+                imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
+            except Exception as image_error:
+                st.error(f"Error al procesar el archivo {uploaded_item.name}: {image_error}")
+                continue
 
-        # Realiza la predicción con el modelo
         clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
         nombre_clase_predicha = info_enfermedad['clases'][str(clase_predicha)]
         resultados.append({"imagen": uploaded_item.name, "clase_predicha": nombre_clase_predicha})
@@ -98,7 +99,6 @@ if uploaded_file_or_folder is not None:
         if nombre_clase_predicha != "Sano":
             imagenes_distintas_de_sano_list.append((imagen_pil, nombre_clase_predicha))
 
-    # Muestra los resultados de la predicción
     if resultados:
         st.write("Resultados:")
         for resultado in resultados:
@@ -108,3 +108,4 @@ if uploaded_file_or_folder is not None:
         st.write("Imágenes distintas a 'Sano':")
         for imagen, clase_predicha in imagenes_distintas_de_sano_list:
             st.image(imagen, caption=f"Clase predicha: {clase_predicha}", use_column_width=True)
+
