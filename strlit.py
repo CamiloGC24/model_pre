@@ -80,16 +80,16 @@ if uploaded_file_or_folder is not None:
 
     for uploaded_item in uploaded_file_or_folder:
         contenido = uploaded_item.read()
+        # Intenta leer cada archivo subido como si fuera un archivo DICOM primero
         try:
-            # Intenta tratar el archivo como DICOM
             dicom_data = pydicom.dcmread(io.BytesIO(contenido), force=True)
             imagen_pil = convertir_dicom_a_pil(dicom_data)
-        except Exception as e:
-            # Si falla, intenta como imagen regular
+        except Exception:
+            # Si falla, asume que no es un archivo DICOM y procede a tratarlo como una imagen regular
             try:
                 imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
-            except Exception as image_error:
-                st.error(f"Error al procesar el archivo {uploaded_item.name}: {image_error}")
+            except IOError:
+                st.error(f"No se pudo procesar el archivo {uploaded_item.name}: No es un DICOM válido ni un tipo de imagen reconocido.")
                 continue
 
         clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
