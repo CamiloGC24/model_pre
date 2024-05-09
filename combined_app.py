@@ -12,6 +12,8 @@ import numpy as np
 import io
 import json
 import matplotlib.pyplot as plt
+from torchvision import transforms
+
 
 # Configuración para manejar archivos DICOM con datos de longitud incorrecta
 pydicom.config.convert_wrong_length_to_UN = True
