@@ -12,7 +12,7 @@ import numpy as np
 import io
 import json
 import matplotlib.pyplot as plt
-from torchvision import transforms
+from torchvision.models import resnet50
 
 
 # Configuración para manejar archivos DICOM con datos de longitud incorrecta
