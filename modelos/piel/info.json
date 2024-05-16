@@ -1,0 +1,18 @@
+{
+    "nombre": "Enfermedades de la piel",
+    "modelo": "modelo_entrenado.pth",
+    "num_clases": 10,
+    "clases": {
+      "0": "Atopic Dermatitis",
+      "1": "Basal Cell Carcinoma (BCC)",
+      "2": "Benign Keratosis-like Lesions (BKL)",
+      "3": "Eczema",
+      "4": "Atopic Dermatitis",
+      "5": "Basal Cell Carcinoma (BCC)",
+      "6": "Benign Keratosis-like Lesions (BKL)",
+      "7": "Eczema",
+      "8": "Atopic Dermatitis",
+      "9": "Basal Cell Carcinoma (BCC)"
+      
+    }
+  }

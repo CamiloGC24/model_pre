@@ -87,6 +87,7 @@ def disease_diagnosis_app():
     enfermedades = {
         "Pneumonia": "modelos/pneumonia/",
         "Tumor Cerebral": "modelos/tumor_cerebral/",
+        "Piel": "modelos/piel/",
     }
 
     enfermedad_seleccionada = st.selectbox("Selecciona la enfermedad a diagnosticar:", list(enfermedades.keys()))
