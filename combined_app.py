@@ -12,13 +12,23 @@ import numpy as np
 import io
 import json
 import matplotlib.pyplot as plt
+import pandas as pd
+import plotly.express as px
 from torchvision.models import resnet50
+from streamlit_lottie import st_lottie
+import requests
 
 # Configuración para manejar archivos DICOM con datos de longitud incorrecta
 pydicom.config.convert_wrong_length_to_UN = True
 
 # Crear carpetas para guardar las imágenes procesadas
 os.makedirs("output", exist_ok=True)
+
+def load_lottieurl(url: str):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
 
 # Función de la primera aplicación
 def add_dcm_extension_and_zip(input_dir, output_zip):
@@ -80,6 +90,11 @@ def convertir_dicom_a_pil(dicom_data):
         pixel_array = np.stack((pixel_array,)*3, axis=-1)  # Convertir a RGB
     imagen_pil = Image.fromarray(pixel_array)
     return imagen_pil
+
+def mostrar_grafico(resultados):
+    df = pd.DataFrame(resultados)
+    fig = px.bar(df, x='imagen', y='clase_predicha', title='Resultados del Diagnóstico')
+    st.plotly_chart(fig)
 
 def disease_diagnosis_app():
     st.header("Diagnóstico de Enfermedades")
@@ -150,6 +165,8 @@ def disease_diagnosis_app():
             for resultado in resultados:
                 st.write(f"Imagen: {resultado['imagen']}, Clase Predicha: {resultado['clase_predicha']}")
 
+            mostrar_grafico(resultados)
+
         if imagenes_distintas_de_sano_list:
             st.write("### Imágenes distintas a 'Sano':")
             for imagen, clase_predicha in imagenes_distintas_de_sano_list:
@@ -163,6 +180,11 @@ def main():
 
     st.sidebar.image("logo.png", use_column_width=True)  # Reemplaza con la ruta correcta del logo
 
+    lottie_animation = load_lottieurl("https://assets3.lottiefiles.com/packages/lf20_7Ghxdy.json")
+    if lottie_animation:
+        st.sidebar.markdown("### Animación")
+        st_lottie(lottie_animation, height=200)
+
     if tabs == "Añadir extensión .dcm":
         dcm_app()
     elif tabs == "Diagnóstico de Enfermedades":
@@ -173,11 +195,31 @@ st.markdown(
     """
     <style>
     .stApp {
-        background-color: #242424;
+        background-color: #f0f0f5;
+        color: #333;
+        font-family: 'Helvetica', sans-serif;
     }
     .stSidebar {
         background-color: #2C3E50;
         color: white;
+    }
+    .stHeader {
+        background-color: #2C3E50;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    .stButton>button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .stButton>button:hover {
+        background-color: #0056b3;
     }
     </style>
     """,
