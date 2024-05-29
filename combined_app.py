@@ -14,7 +14,6 @@ import json
 import matplotlib.pyplot as plt
 from torchvision.models import resnet50
 
-
 # Configuración para manejar archivos DICOM con datos de longitud incorrecta
 pydicom.config.convert_wrong_length_to_UN = True
 
@@ -31,9 +30,10 @@ def add_dcm_extension_and_zip(input_dir, output_zip):
                 zipf.write(os.path.join(root, file), arcname=new_file_path)
 
 def dcm_app():
-    st.title("Añadir extensión .dcm a archivos")
+    st.header("Añadir extensión .dcm a archivos")
+    st.markdown("### Sube una carpeta en formato zip que contenga tus archivos para añadirles la extensión `.dcm`:")
 
-    uploaded_files = st.file_uploader("Sube una carpeta en formato zip que contenga tus archivos", accept_multiple_files=False, type='zip')
+    uploaded_files = st.file_uploader("Subir carpeta en formato zip", accept_multiple_files=False, type='zip')
 
     if uploaded_files is not None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -82,7 +82,8 @@ def convertir_dicom_a_pil(dicom_data):
     return imagen_pil
 
 def disease_diagnosis_app():
-    st.title("Diagnóstico de Enfermedades")
+    st.header("Diagnóstico de Enfermedades")
+    st.markdown("### Selecciona la enfermedad y sube una imagen para diagnóstico:")
 
     enfermedades = {
         "Pneumonia": "modelos/pneumonia/",
@@ -145,24 +146,43 @@ def disease_diagnosis_app():
                 imagenes_distintas_de_sano_list.append((imagen_pil, nombre_clase_predicha))
 
         if resultados:
-            st.write("Resultados:")
+            st.write("### Resultados:")
             for resultado in resultados:
                 st.write(f"Imagen: {resultado['imagen']}, Clase Predicha: {resultado['clase_predicha']}")
 
         if imagenes_distintas_de_sano_list:
-            st.write("Imágenes distintas a 'Sano':")
+            st.write("### Imágenes distintas a 'Sano':")
             for imagen, clase_predicha in imagenes_distintas_de_sano_list:
                 st.image(imagen, caption=f"Clase predicha: {clase_predicha}", use_column_width=True)
 
 # Aplicación principal con pestañas
 def main():
-    st.sidebar.title("Navegación")
+    st.sidebar.title("Praeventio")
+    st.sidebar.markdown("### Navegación")
     tabs = st.sidebar.radio("Ir a", ["Añadir extensión .dcm", "Diagnóstico de Enfermedades"])
+
+    st.sidebar.image("path/to/logo.png", use_column_width=True)  # Reemplaza con la ruta correcta del logo
 
     if tabs == "Añadir extensión .dcm":
         dcm_app()
     elif tabs == "Diagnóstico de Enfermedades":
         disease_diagnosis_app()
+
+# Estilo personalizado para la app
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-color: #f5f5f5;
+    }
+    .stSidebar {
+        background-color: #2C3E50;
+        color: white;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 if __name__ == "__main__":
     main()
