@@ -152,7 +152,7 @@ def disease_diagnosis_app():
 
         if imagenes_distintas_de_sano_list:
             st.write("### Imágenes distintas a 'Sano':")
-            for imagen, clase_predicha in imagenes_distintas_de_sano_list:
+            for imagen, clase predicha en imagenes_distintas_de_sano_list:
                 st.image(imagen, caption=f"Clase predicha: {clase_predicha}", use_column_width=True)
 
 # Aplicación principal con pestañas
@@ -174,10 +174,11 @@ st.markdown(
     <style>
     .stApp {
         background-color: #f5f5f5;
+        color: #000000; /* Color del texto */
     }
     .stSidebar {
         background-color: #2C3E50;
-        color: black;
+        color: white;
     }
     </style>
     """,
