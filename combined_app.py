@@ -14,8 +14,6 @@ import json
 import matplotlib.pyplot as plt
 from torchvision.models import resnet50
 
-# Load logo image
-logo_path = "/mnt/data/DALL·E-2024-05-26-19.04.23-A-sleek-and-innovative-logo-for-a-medical-diagnosis-app-powered-by-AI.png"
 
 # Configuración para manejar archivos DICOM con datos de longitud incorrecta
 pydicom.config.convert_wrong_length_to_UN = True
@@ -34,7 +32,6 @@ def add_dcm_extension_and_zip(input_dir, output_zip):
 
 def dcm_app():
     st.title("Añadir extensión .dcm a archivos")
-    st.image(logo_path, width=100)
 
     uploaded_files = st.file_uploader("Sube una carpeta en formato zip que contenga tus archivos", accept_multiple_files=False, type='zip')
 
@@ -86,7 +83,6 @@ def convertir_dicom_a_pil(dicom_data):
 
 def disease_diagnosis_app():
     st.title("Diagnóstico de Enfermedades")
-    st.image(logo_path, width=100)
 
     enfermedades = {
         "Pneumonia": "modelos/pneumonia/",
@@ -160,8 +156,7 @@ def disease_diagnosis_app():
 
 # Aplicación principal con pestañas
 def main():
-    st.sidebar.title("Preaventio")
-    st.sidebar.image(logo_path, width=100)
+    st.sidebar.title("Navegación")
     tabs = st.sidebar.radio("Ir a", ["Añadir extensión .dcm", "Diagnóstico de Enfermedades"])
 
     if tabs == "Añadir extensión .dcm":
