@@ -177,7 +177,7 @@ st.markdown(
     }
     .stSidebar {
         background-color: #2C3E50;
-        color: white;
+        color: black;
     }
     </style>
     """,
