@@ -195,7 +195,7 @@ st.markdown(
     """
     <style>
     .stApp {
-        background-color: #f0f0f5;
+        background-color: #242424;
         color: #333;
         font-family: 'Helvetica', sans-serif;
     }
