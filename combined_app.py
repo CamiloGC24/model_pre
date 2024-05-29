@@ -196,7 +196,7 @@ st.markdown(
     <style>
     .stApp {
         background-color: #242424;
-        color: #333;
+        color: #FFFFFF;
         font-family: 'Helvetica', sans-serif;
     }
     .stSidebar {
