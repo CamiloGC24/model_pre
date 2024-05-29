@@ -161,7 +161,7 @@ def main():
     st.sidebar.markdown("### Navegación")
     tabs = st.sidebar.radio("Ir a", ["Añadir extensión .dcm", "Diagnóstico de Enfermedades"])
 
-    st.sidebar.image("path/to/logo.png", use_column_width=True)  # Reemplaza con la ruta correcta del logo
+    st.sidebar.image("logo.png", use_column_width=True)  # Reemplaza con la ruta correcta del logo
 
     if tabs == "Añadir extensión .dcm":
         dcm_app()
