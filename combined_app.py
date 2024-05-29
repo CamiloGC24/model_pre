@@ -173,7 +173,7 @@ st.markdown(
     """
     <style>
     .stApp {
-        background-color: #313131;
+        background-color: #242424;
     }
     .stSidebar {
         background-color: #2C3E50;
