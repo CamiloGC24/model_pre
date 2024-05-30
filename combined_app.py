@@ -242,7 +242,7 @@ def disease_symptoms_app():
         "General": ["fiebre", "fatiga", "pérdida de apetito"],
         "Dolores": ["dolor de cabeza", "dolor abdominal", "dolor en el pecho", "dolor en las articulaciones", "dolor de espalda"],
         "Respiratorio": ["tos", "dificultad para respirar"],
-        "Gastrointestinal": ["náuseas y vómitos", "dolor abdominal", "pérdida de apetito", "sangrado anormal"],
+        "Gastrointestinal": ["náuseas y vómitos", "pérdida de apetito", "sangrado anormal"],
         "Dermatológico": ["erupciones en la piel"],
         "Oftalmológico": ["visión borrosa"],
         "Hematológico": ["sangrado anormal"]
