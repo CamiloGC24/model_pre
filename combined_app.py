@@ -242,7 +242,7 @@ def disease_symptoms_app():
         "General": ["fiebre", "fatiga", "pérdida de apetito"],
         "Dolores": ["dolor de cabeza", "dolor abdominal", "dolor en el pecho", "dolor en las articulaciones", "dolor de espalda"],
         "Respiratorio": ["tos", "dificultad para respirar"],
-        "Gastrointestinal": ["náuseas y vómitos", "pérdida de apetito", "sangrado anormal"],
+        "Gastrointestinal": ["náuseas y vómitos", "dolor abdominal", "pérdida de apetito", "sangrado anormal"],
         "Dermatológico": ["erupciones en la piel"],
         "Oftalmológico": ["visión borrosa"],
         "Hematológico": ["sangrado anormal"]
@@ -252,7 +252,7 @@ def disease_symptoms_app():
     for categoria, sintomas in categorias.items():
         with st.expander(categoria):
             for sintoma in sintomas:
-                if st.checkbox(sintoma):
+                if st.checkbox(sintoma, key=f"{categoria}_{sintoma}"):
                     sintomas_seleccionados.append(sintoma)
 
     if st.button("Diagnosticar"):
