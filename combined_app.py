@@ -96,87 +96,59 @@ def mostrar_grafico(resultados):
     fig = px.bar(df, x='imagen', y='clase_predicha', title='Resultados del Diagnóstico')
     st.plotly_chart(fig)
 
-def disease_diagnosis_app():
-    st.header("Diagnóstico de Enfermedades")
-    st.markdown("### Selecciona la enfermedad y sube una imagen para diagnóstico:")
+# Nueva función para la sección de síntomas
+def disease_symptoms_app():
+    st.header("Diagnóstico por Síntomas")
+    st.markdown("### Introduce tus síntomas y obtén posibles enfermedades y pruebas necesarias:")
 
-    enfermedades = {
-        "Pneumonia": "modelos/pneumonia/",
-        "Tumor Cerebral": "modelos/tumor_cerebral/",
-        "Piel": "modelos/piel/",
+    # Diccionario de síntomas, posibles enfermedades y pruebas
+    symptoms_data = {
+        "fiebre": {
+            "enfermedades": ["Gripe", "COVID-19", "Infección Bacteriana"],
+            "pruebas": ["Prueba de PCR", "Análisis de Sangre"]
+        },
+        "dolor de cabeza": {
+            "enfermedades": ["Migraña", "Tensión", "Infección Sinusal"],
+            "pruebas": ["Escáner CT", "MRI"]
+        },
+        "tos": {
+            "enfermedades": ["Bronquitis", "COVID-19", "Neumonía"],
+            "pruebas": ["Radiografía de Tórax", "Prueba de PCR"]
+        }
     }
 
-    enfermedad_seleccionada = st.selectbox("Selecciona la enfermedad a diagnosticar:", list(enfermedades.keys()))
+    # Entrada de síntomas
+    sintomas_usuario = st.text_input("Introduce tus síntomas separados por comas (e.g., fiebre, tos)")
 
-    ruta_carpeta_enfermedad = enfermedades[enfermedad_seleccionada]
-    ruta_info_enfermedad = os.path.join(ruta_carpeta_enfermedad, "info.json")
+    if st.button("Diagnosticar"):
+        if sintomas_usuario:
+            sintomas_lista = [sintoma.strip().lower() for sintoma in sintomas_usuario.split(",")]
+            posibles_enfermedades = set()
+            pruebas_necesarias = set()
 
-    try:
-        with open(ruta_info_enfermedad, 'r') as json_file:
-            info_enfermedad = json.load(json_file)
-    except Exception as e:
-        st.error(f"Error al leer el archivo {ruta_info_enfermedad}: {str(e)}")
-        raise e
+            for sintoma in sintomas_lista:
+                if sintoma in symptoms_data:
+                    posibles_enfermedades.update(symptoms_data[sintoma]["enfermedades"])
+                    pruebas_necesarias.update(symptoms_data[sintoma]["pruebas"])
 
-    ruta_completa_modelo = os.path.join(ruta_carpeta_enfermedad, "modelo_entrenado.pth")
-    if not os.path.isfile(ruta_completa_modelo):
-        st.error(f"No se pudo encontrar el archivo del modelo: {ruta_completa_modelo}.")
-        st.stop()
+            if posibles_enfermedades and pruebas_necesarias:
+                st.write("### Posibles Enfermedades:")
+                for enfermedad in posibles_enfermedades:
+                    st.write(f"- {enfermedad}")
 
-    modelo_seleccionado = cargar_modelo(ruta_completa_modelo, info_enfermedad['num_clases'])
-
-    uploaded_file_or_folder = st.file_uploader("Elige una imagen o carpeta...", type=["jpg", "jpeg", "png", "dcm"], accept_multiple_files=True)
-
-    if uploaded_file_or_folder is not None:
-        resultados = []
-        imagenes_distintas_de_sano_list = []
-
-        for uploaded_item in uploaded_file_or_folder:
-            contenido = uploaded_item.read()
-            file_name = uploaded_item.name.lower()
-            file_extension = file_name.split('.')[-1]
-
-            if file_extension not in ['png', 'jpg', 'jpeg']:
-                try:
-                    dicom_data = pydicom.dcmread(io.BytesIO(contenido), force=True)
-                    if 'PixelData' in dicom_data:
-                        imagen_pil = convertir_dicom_a_pil(dicom_data)
-                    else:
-                        raise ValueError("El archivo DICOM no contiene datos de imagen.")
-                except Exception as e:
-                    st.error(f"No se pudo procesar el archivo {uploaded_item.name}: {e}")
-                    continue
+                st.write("### Pruebas Necesarias:")
+                for prueba in pruebas_necesarias:
+                    st.write(f"- {prueba}")
             else:
-                try:
-                    imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
-                except IOError as e:
-                    st.error(f"No se pudo procesar el archivo de imagen {uploaded_item.name}: {e}")
-                    continue
-
-            clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
-            nombre_clase_predicha = info_enfermedad['clases'][str(clase_predicha)]
-            resultados.append({"imagen": uploaded_item.name, "clase_predicha": nombre_clase_predicha})
-
-            if nombre_clase_predicha != "Sano":
-                imagenes_distintas_de_sano_list.append((imagen_pil, nombre_clase_predicha))
-
-        if resultados:
-            st.write("### Resultados:")
-            for resultado in resultados:
-                st.write(f"Imagen: {resultado['imagen']}, Clase Predicha: {resultado['clase_predicha']}")
-
-            mostrar_grafico(resultados)
-
-        if imagenes_distintas_de_sano_list:
-            st.write("### Imágenes distintas a 'Sano':")
-            for imagen, clase_predicha in imagenes_distintas_de_sano_list:
-                st.image(imagen, caption=f"Clase predicha: {clase_predicha}", use_column_width=True)
+                st.write("No se encontraron coincidencias para los síntomas ingresados.")
+        else:
+            st.write("Por favor, introduce algunos síntomas.")
 
 # Aplicación principal con pestañas
 def main():
     st.sidebar.title("Praeventio")
     st.sidebar.markdown("### Navegación")
-    tabs = st.sidebar.radio("Ir a", ["Añadir extensión .dcm", "Diagnóstico de Enfermedades"])
+    tabs = st.sidebar.radio("Ir a", ["Añadir extensión .dcm", "Diagnóstico de Enfermedades", "Diagnóstico por Síntomas"])
 
     st.sidebar.image("logo.png", use_column_width=True)  # Reemplaza con la ruta correcta del logo
 
@@ -189,6 +161,8 @@ def main():
         dcm_app()
     elif tabs == "Diagnóstico de Enfermedades":
         disease_diagnosis_app()
+    elif tabs == "Diagnóstico por Síntomas":
+        disease_symptoms_app()
 
 # Estilo personalizado para la app
 st.markdown(
