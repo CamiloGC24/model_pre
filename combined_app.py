@@ -96,7 +96,82 @@ def mostrar_grafico(resultados):
     fig = px.bar(df, x='imagen', y='clase_predicha', title='Resultados del Diagnóstico')
     st.plotly_chart(fig)
 
-# Nueva función para la sección de síntomas
+def disease_diagnosis_app():
+    st.header("Diagnóstico de Enfermedades")
+    st.markdown("### Selecciona la enfermedad y sube una imagen para diagnóstico:")
+
+    enfermedades = {
+        "Pneumonia": "modelos/pneumonia/",
+        "Tumor Cerebral": "modelos/tumor_cerebral/",
+        "Piel": "modelos/piel/",
+    }
+
+    enfermedad_seleccionada = st.selectbox("Selecciona la enfermedad a diagnosticar:", list(enfermedades.keys()))
+
+    ruta_carpeta_enfermedad = enfermedades[enfermedad_seleccionada]
+    ruta_info_enfermedad = os.path.join(ruta_carpeta_enfermedad, "info.json")
+
+    try:
+        with open(ruta_info_enfermedad, 'r') as json_file:
+            info_enfermedad = json.load(json_file)
+    except Exception as e:
+        st.error(f"Error al leer el archivo {ruta_info_enfermedad}: {str(e)}")
+        raise e
+
+    ruta_completa_modelo = os.path.join(ruta_carpeta_enfermedad, "modelo_entrenado.pth")
+    if not os.path.isfile(ruta_completa_modelo):
+        st.error(f"No se pudo encontrar el archivo del modelo: {ruta_completa_modelo}.")
+        st.stop()
+
+    modelo_seleccionado = cargar_modelo(ruta_completa_modelo, info_enfermedad['num_clases'])
+
+    uploaded_file_or_folder = st.file_uploader("Elige una imagen o carpeta...", type=["jpg", "jpeg", "png", "dcm"], accept_multiple_files=True)
+
+    if uploaded_file_or_folder is not None:
+        resultados = []
+        imagenes_distintas_de_sano_list = []
+
+        for uploaded_item in uploaded_file_or_folder:
+            contenido = uploaded_item.read()
+            file_name = uploaded_item.name.lower()
+            file_extension = file_name.split('.')[-1]
+
+            if file_extension not in ['png', 'jpg', 'jpeg']:
+                try:
+                    dicom_data = pydicom.dcmread(io.BytesIO(contenido), force=True)
+                    if 'PixelData' in dicom_data:
+                        imagen_pil = convertir_dicom_a_pil(dicom_data)
+                    else:
+                        raise ValueError("El archivo DICOM no contiene datos de imagen.")
+                except Exception as e:
+                    st.error(f"No se pudo procesar el archivo {uploaded_item.name}: {e}")
+                    continue
+            else:
+                try:
+                    imagen_pil = Image.open(io.BytesIO(contenido)).convert('RGB')
+                except IOError as e:
+                    st.error(f"No se pudo procesar el archivo de imagen {uploaded_item.name}: {e}")
+                    continue
+
+            clase_predicha = predecir_imagen(modelo_seleccionado, imagen_pil)
+            nombre_clase_predicha = info_enfermedad['clases'][str(clase_predicha)]
+            resultados.append({"imagen": uploaded_item.name, "clase_predicha": nombre_clase_predicha})
+
+            if nombre_clase_predicha != "Sano":
+                imagenes_distintas_de_sano_list.append((imagen_pil, nombre_clase_predicha))
+
+        if resultados:
+            st.write("### Resultados:")
+            for resultado in resultados:
+                st.write(f"Imagen: {resultado['imagen']}, Clase Predicha: {resultado['clase_predicha']}")
+
+            mostrar_grafico(resultados)
+
+        if imagenes_distintas_de_sano_list:
+            st.write("### Imágenes distintas a 'Sano':")
+            for imagen, clase_predicha in imagenes_distintas_de_sano_list:
+                st.image(imagen, caption=f"Clase predicha: {clase_predicha}", use_column_width=True)
+
 def disease_symptoms_app():
     st.header("Diagnóstico por Síntomas")
     st.markdown("### Introduce tus síntomas y obtén posibles enfermedades y pruebas necesarias:")
@@ -202,3 +277,4 @@ st.markdown(
 
 if __name__ == "__main__":
     main()
+
