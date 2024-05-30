@@ -172,81 +172,95 @@ def disease_diagnosis_app():
             for imagen, clase_predicha in imagenes_distintas_de_sano_list:
                 st.image(imagen, caption=f"Clase predicha: {clase_predicha}", use_column_width=True)
 
+# Nueva función para la sección de síntomas
 def disease_symptoms_app():
     st.header("Diagnóstico por Síntomas")
-    st.markdown("### Introduce tus síntomas y obtén posibles enfermedades y pruebas necesarias:")
+    st.markdown("### Selecciona tus síntomas y obtén posibles enfermedades y pruebas necesarias:")
 
     # Diccionario de síntomas, posibles enfermedades y pruebas
     symptoms_data = {
-    "fiebre": {
-        "enfermedades": ["Gripe", "COVID-19", "Infección Bacteriana", "Malaria", "Dengue"],
-        "pruebas": ["Prueba de PCR", "Análisis de Sangre", "Frotis de Sangre"]
-    },
-    "dolor de cabeza": {
-        "enfermedades": ["Migraña", "Tensión", "Infección Sinusal", "Meningitis", "Tumor Cerebral"],
-        "pruebas": ["Escáner CT", "MRI", "Punción Lumbar"]
-    },
-    "tos": {
-        "enfermedades": ["Bronquitis", "COVID-19", "Neumonía", "Asma", "Tuberculosis"],
-        "pruebas": ["Radiografía de Tórax", "Prueba de PCR", "Prueba de Función Pulmonar"]
-    },
-    "dolor abdominal": {
-        "enfermedades": ["Apendicitis", "Gastritis", "Úlcera Péptica", "Pancreatitis", "Hepatitis"],
-        "pruebas": ["Ultrasonido Abdominal", "Endoscopia", "Análisis de Sangre"]
-    },
-    "náuseas y vómitos": {
-        "enfermedades": ["Gastroenteritis", "Intoxicación Alimentaria", "Migraña", "Embarazo", "Cinetosis"],
-        "pruebas": ["Análisis de Sangre", "Prueba de Embarazo", "Cultivo de Heces"]
-    },
-    "dolor en el pecho": {
-        "enfermedades": ["Infarto de Miocardio", "Angina", "Reflujo Gastroesofágico", "Costocondritis", "Embolia Pulmonar"],
-        "pruebas": ["Electrocardiograma (ECG)", "Análisis de Sangre", "Angiografía Coronaria"]
-    },
-    "fatiga": {
-        "enfermedades": ["Anemia", "Hipotiroidismo", "Diabetes", "Síndrome de Fatiga Crónica", "Depresión"],
-        "pruebas": ["Análisis de Sangre", "Prueba de Tiroides", "Prueba de Glucosa"]
-    },
-    "erupciones en la piel": {
-        "enfermedades": ["Dermatitis", "Varicela", "Sarampión", "Alergias", "Psoriasis"],
-        "pruebas": ["Biopsia de Piel", "Pruebas de Alergia", "Análisis de Sangre"]
-    },
-    "dificultad para respirar": {
-        "enfermedades": ["Asma", "EPOC", "Insuficiencia Cardíaca", "Neumonía", "COVID-19"],
-        "pruebas": ["Radiografía de Tórax", "Prueba de Función Pulmonar", "Electrocardiograma (ECG)"]
-    },
-    "dolor en las articulaciones": {
-        "enfermedades": ["Artritis Reumatoide", "Osteoartritis", "Gota", "Lupus", "Bursitis"],
-        "pruebas": ["Análisis de Sangre", "Radiografía", "Resonancia Magnética (MRI)"]
-    },
-    "visión borrosa": {
-        "enfermedades": ["Cataratas", "Glaucoma", "Degeneración Macular", "Diabetes", "Hipertensión"],
-        "pruebas": ["Examen de la Vista", "Tomografía de Coherencia Óptica (OCT)", "Análisis de Sangre"]
-    },
-    "dolor de espalda": {
-        "enfermedades": ["Hernia de Disco", "Lumbalgia", "Escoliosis", "Osteoporosis", "Espondilitis Anquilosante"],
-        "pruebas": ["Radiografía", "Resonancia Magnética (MRI)", "Tomografía Computarizada (CT)"]
-    },
-    "pérdida de apetito": {
-        "enfermedades": ["Anorexia", "Depresión", "Cáncer", "Enfermedad Renal Crónica", "Insuficiencia Hepática"],
-        "pruebas": ["Análisis de Sangre", "Ultrasonido Abdominal", "Endoscopia"]
-    },
-    "sangrado anormal": {
-        "enfermedades": ["Hemorroides", "Úlcera Péptica", "Cáncer de Colon", "Trastornos de la Coagulación", "Enfermedad Inflamatoria Intestinal"],
-        "pruebas": ["Colonoscopia", "Endoscopia", "Análisis de Sangre"]
+        "fiebre": {
+            "enfermedades": ["Gripe", "COVID-19", "Infección Bacteriana", "Malaria", "Dengue"],
+            "pruebas": ["Prueba de PCR", "Análisis de Sangre", "Frotis de Sangre"]
+        },
+        "dolor de cabeza": {
+            "enfermedades": ["Migraña", "Tensión", "Infección Sinusal", "Meningitis", "Tumor Cerebral"],
+            "pruebas": ["Escáner CT", "MRI", "Punción Lumbar"]
+        },
+        "tos": {
+            "enfermedades": ["Bronquitis", "COVID-19", "Neumonía", "Asma", "Tuberculosis"],
+            "pruebas": ["Radiografía de Tórax", "Prueba de PCR", "Prueba de Función Pulmonar"]
+        },
+        "dolor abdominal": {
+            "enfermedades": ["Apendicitis", "Gastritis", "Úlcera Péptica", "Pancreatitis", "Hepatitis"],
+            "pruebas": ["Ultrasonido Abdominal", "Endoscopia", "Análisis de Sangre"]
+        },
+        "náuseas y vómitos": {
+            "enfermedades": ["Gastroenteritis", "Intoxicación Alimentaria", "Migraña", "Embarazo", "Cinetosis"],
+            "pruebas": ["Análisis de Sangre", "Prueba de Embarazo", "Cultivo de Heces"]
+        },
+        "dolor en el pecho": {
+            "enfermedades": ["Infarto de Miocardio", "Angina", "Reflujo Gastroesofágico", "Costocondritis", "Embolia Pulmonar"],
+            "pruebas": ["Electrocardiograma (ECG)", "Análisis de Sangre", "Angiografía Coronaria"]
+        },
+        "fatiga": {
+            "enfermedades": ["Anemia", "Hipotiroidismo", "Diabetes", "Síndrome de Fatiga Crónica", "Depresión"],
+            "pruebas": ["Análisis de Sangre", "Prueba de Tiroides", "Prueba de Glucosa"]
+        },
+        "erupciones en la piel": {
+            "enfermedades": ["Dermatitis", "Varicela", "Sarampión", "Alergias", "Psoriasis"],
+            "pruebas": ["Biopsia de Piel", "Pruebas de Alergia", "Análisis de Sangre"]
+        },
+        "dificultad para respirar": {
+            "enfermedades": ["Asma", "EPOC", "Insuficiencia Cardíaca", "Neumonía", "COVID-19"],
+            "pruebas": ["Radiografía de Tórax", "Prueba de Función Pulmonar", "Electrocardiograma (ECG)"]
+        },
+        "dolor en las articulaciones": {
+            "enfermedades": ["Artritis Reumatoide", "Osteoartritis", "Gota", "Lupus", "Bursitis"],
+            "pruebas": ["Análisis de Sangre", "Radiografía", "Resonancia Magnética (MRI)"]
+        },
+        "visión borrosa": {
+            "enfermedades": ["Cataratas", "Glaucoma", "Degeneración Macular", "Diabetes", "Hipertensión"],
+            "pruebas": ["Examen de la Vista", "Tomografía de Coherencia Óptica (OCT)", "Análisis de Sangre"]
+        },
+        "dolor de espalda": {
+            "enfermedades": ["Hernia de Disco", "Lumbalgia", "Escoliosis", "Osteoporosis", "Espondilitis Anquilosante"],
+            "pruebas": ["Radiografía", "Resonancia Magnética (MRI)", "Tomografía Computarizada (CT)"]
+        },
+        "pérdida de apetito": {
+            "enfermedades": ["Anorexia", "Depresión", "Cáncer", "Enfermedad Renal Crónica", "Insuficiencia Hepática"],
+            "pruebas": ["Análisis de Sangre", "Ultrasonido Abdominal", "Endoscopia"]
+        },
+        "sangrado anormal": {
+            "enfermedades": ["Hemorroides", "Úlcera Péptica", "Cáncer de Colon", "Trastornos de la Coagulación", "Enfermedad Inflamatoria Intestinal"],
+            "pruebas": ["Colonoscopia", "Endoscopia", "Análisis de Sangre"]
+        }
     }
-}
 
+    # Crear listas de selección para cada categoría de síntomas
+    categorias = {
+        "General": ["fiebre", "fatiga", "pérdida de apetito"],
+        "Dolores": ["dolor de cabeza", "dolor abdominal", "dolor en el pecho", "dolor en las articulaciones", "dolor de espalda"],
+        "Respiratorio": ["tos", "dificultad para respirar"],
+        "Gastrointestinal": ["náuseas y vómitos", "dolor abdominal", "pérdida de apetito", "sangrado anormal"],
+        "Dermatológico": ["erupciones en la piel"],
+        "Oftalmológico": ["visión borrosa"],
+        "Hematológico": ["sangrado anormal"]
+    }
 
-    # Entrada de síntomas
-    sintomas_usuario = st.text_input("Introduce tus síntomas separados por comas (e.g., fiebre, tos)")
+    sintomas_seleccionados = []
+    for categoria, sintomas in categorias.items():
+        with st.expander(categoria):
+            for sintoma in sintomas:
+                if st.checkbox(sintoma):
+                    sintomas_seleccionados.append(sintoma)
 
     if st.button("Diagnosticar"):
-        if sintomas_usuario:
-            sintomas_lista = [sintoma.strip().lower() for sintoma in sintomas_usuario.split(",")]
+        if sintomas_seleccionados:
             posibles_enfermedades = set()
             pruebas_necesarias = set()
 
-            for sintoma in sintomas_lista:
+            for sintoma in sintomas_seleccionados:
                 if sintoma in symptoms_data:
                     posibles_enfermedades.update(symptoms_data[sintoma]["enfermedades"])
                     pruebas_necesarias.update(symptoms_data[sintoma]["pruebas"])
@@ -260,9 +274,9 @@ def disease_symptoms_app():
                 for prueba in pruebas_necesarias:
                     st.write(f"- {prueba}")
             else:
-                st.write("No se encontraron coincidencias para los síntomas ingresados.")
+                st.write("No se encontraron coincidencias para los síntomas seleccionados.")
         else:
-            st.write("Por favor, introduce algunos síntomas.")
+            st.write("Por favor, selecciona algunos síntomas.")
 
 # Aplicación principal con pestañas
 def main():
@@ -322,4 +336,3 @@ st.markdown(
 
 if __name__ == "__main__":
     main()
-
