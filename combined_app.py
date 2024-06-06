@@ -101,7 +101,7 @@ def disease_diagnosis_app():
     st.markdown("### Selecciona la enfermedad y sube una imagen para diagnóstico:")
 
     enfermedades = {
-        "Pneumonia": "modelos/pneumonia/",
+        "Neumonía": "modelos/pneumonia/",
         "Tumor Cerebral": "modelos/tumor_cerebral/",
         "Piel": "modelos/piel/",
     }
